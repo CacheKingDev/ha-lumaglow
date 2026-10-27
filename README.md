@@ -1,9 +1,4 @@
-<!-- Absolute URLs: HACS zeigt relative Bildpfade nicht an. Ohne <picture>-Unterstützung erscheint das Icon (lesbar auf hellem und dunklem Hintergrund). -->
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/CacheKingDev/ha-lumaglow/main/custom_components/lumaglow/brand/dark_logo@2x.png">
-  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/CacheKingDev/ha-lumaglow/main/custom_components/lumaglow/brand/logo@2x.png">
-  <img alt="LumaGlow" src="https://raw.githubusercontent.com/CacheKingDev/ha-lumaglow/main/custom_components/lumaglow/brand/icon@2x.png" height="128">
-</picture>
+![LumaGlow](https://raw.githubusercontent.com/CacheKingDev/ha-lumaglow/main/custom_components/lumaglow/brand/icon.png)
 
 # LumaGlow für Home Assistant
 
