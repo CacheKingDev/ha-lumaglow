@@ -1,0 +1,29 @@
+{
+  "config": {
+    "flow_title": "{name}",
+    "step": {
+      "user": {
+        "title": "LumaGlow hinzufügen",
+        "description": "Hostname oder IP-Adresse der Matrix (wie im Webinterface).",
+        "data": { "host": "Host" }
+      },
+      "zeroconf_confirm": {
+        "title": "LumaGlow gefunden",
+        "description": "{name} ({host}) zu Home Assistant hinzufügen?"
+      }
+    },
+    "error": {
+      "cannot_connect": "Gerät nicht erreichbar"
+    },
+    "abort": {
+      "already_configured": "Gerät ist bereits eingerichtet",
+      "cannot_connect": "Gerät nicht erreichbar"
+    }
+  },
+  "entity": {
+    "sensor": {
+      "rssi": { "name": "WLAN-Signal" },
+      "fs_free": { "name": "Freier Speicher" }
+    }
+  }
+}

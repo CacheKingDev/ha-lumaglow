@@ -1,0 +1,29 @@
+{
+  "config": {
+    "flow_title": "{name}",
+    "step": {
+      "user": {
+        "title": "Add LumaGlow",
+        "description": "Hostname or IP address of the matrix (as shown in the web interface).",
+        "data": { "host": "Host" }
+      },
+      "zeroconf_confirm": {
+        "title": "LumaGlow found",
+        "description": "Add {name} ({host}) to Home Assistant?"
+      }
+    },
+    "error": {
+      "cannot_connect": "Device not reachable"
+    },
+    "abort": {
+      "already_configured": "Device is already configured",
+      "cannot_connect": "Device not reachable"
+    }
+  },
+  "entity": {
+    "sensor": {
+      "rssi": { "name": "WiFi signal" },
+      "fs_free": { "name": "Free storage" }
+    }
+  }
+}
