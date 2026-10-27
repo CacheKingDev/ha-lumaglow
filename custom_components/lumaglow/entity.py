@@ -23,6 +23,6 @@ class LumaGlowEntity(CoordinatorEntity[LumaGlowCoordinator]):
             manufacturer=MANUFACTURER,
             model=f"16x16 Matrix ({info.get('chip', '?')})",
             name=info.get("hostname") or "LumaGlow",
-            sw_version=info.get("build"),
+            sw_version=info.get("version") or info.get("build"),
             configuration_url=f"http://{coordinator.client.host}",
         )

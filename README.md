@@ -12,7 +12,7 @@ Manuell: Ordner `custom_components/lumaglow` nach `<HA-Konfiguration>/custom_com
 
 ## Einrichtung
 
-Die Matrix wird per Zeroconf (`_lumaglow._tcp`) automatisch erkannt und erscheint unter *Einstellungen → Geräte & Dienste*. Sonst: *Integration hinzufügen → LumaGlow* und Host eingeben (z. B. `lumaglow.local` oder die IP).
+Die Matrix wird per Zeroconf (`_lumaglow._tcp`) automatisch erkannt und erscheint unter *Einstellungen → Geräte & Dienste*. Sonst: *Integration hinzufügen → LumaGlow* und Host eingeben (z. B. `lumaglow-563308.local` oder die IP).
 
 Voraussetzung: Firmware mit mDNS-Dienst `_lumaglow._tcp` (für die automatische Erkennung) und Gerät im Heim-WLAN.
 
@@ -24,7 +24,9 @@ Voraussetzung: Firmware mit mDNS-Dienst `_lumaglow._tcp` (für die automatische 
 | WLAN-Signal | Diagnose, dBm |
 | Freier Speicher | Diagnose, freier Platz für GIFs |
 
-Der Zustand wird alle 10 s abgefragt. Die MAC-Adresse ist die eindeutige ID. Ändert sich die IP, aktualisiert die Zeroconf-Erkennung den Eintrag.
+Der Zustand wird alle 10 s abgefragt. Die MAC-Adresse ist die eindeutige ID, mehrere Matrizen lassen sich also parallel einrichten. Ändert sich die IP, aktualisiert die Zeroconf-Erkennung den Eintrag. Antwortet unter dem Host ein anderes Gerät (andere MAC), wird die Matrix als nicht verfügbar angezeigt statt fremde Daten zu übernehmen.
+
+Voraussetzung für mehrere Matrizen: Firmware ab v0.4.0. Ältere Versionen heißen alle `lumaglow.local` und überdecken sich gegenseitig.
 
 ## Beispiel
 

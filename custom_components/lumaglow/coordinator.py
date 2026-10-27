@@ -8,6 +8,7 @@ from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.device_registry import format_mac
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .api import LumaGlowClient, LumaGlowError
@@ -38,6 +39,14 @@ class LumaGlowCoordinator(DataUpdateCoordinator[LumaGlowData]):
             gifs = await self.client.get_gifs()
         except LumaGlowError as err:
             raise UpdateFailed(str(err)) from err
+
+        # Unter dem Host antwortet ein anderes Gerät (z. B. zwei Matrizen mit gleichem mDNS-Namen):
+        # nicht dessen Zustand anzeigen oder es steuern. Die Zeroconf-Erkennung setzt die richtige IP.
+        mac = format_mac(info.get("mac", ""))
+        if mac != self.config_entry.unique_id:
+            raise UpdateFailed(
+                f"{self.client.host} gehört zu {mac or 'unbekannt'}, erwartet {self.config_entry.unique_id}"
+            )
 
         current = gifs.get("current") or None
         return LumaGlowData(
