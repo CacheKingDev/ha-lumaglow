@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from typing import Any
 
 from homeassistant.components.light import (
@@ -58,25 +59,31 @@ class LumaGlowLight(LumaGlowEntity, LightEntity):
 
     async def async_turn_on(self, **kwargs: Any) -> None:
         client = self.coordinator.client
+        data = self.coordinator.data
         try:
             display: dict[str, Any] = {"power": True}
             if ATTR_BRIGHTNESS in kwargs:
                 # Firmware erlaubt 1–255 (0 = aus wäre power=0)
                 display["brightness"] = max(1, kwargs[ATTR_BRIGHTNESS])
-            await client.set_display(**display)
+            # Antwort = /api/info mit dem neuen Zustand
+            data = replace(data, info=await client.set_display(**display))
 
             effect = kwargs.get(ATTR_EFFECT)
             if effect == EFFECT_NONE:
                 await client.stop_gif()
+                data = replace(data, current_gif=None)
             elif effect is not None:
                 await client.play_gif(effect)
+                data = replace(data, current_gif=effect)
         except LumaGlowError as err:
             raise HomeAssistantError(str(err)) from err
-        await self.coordinator.async_request_refresh()
+        # Zustand sofort übernehmen statt auf die nächste Abfrage zu warten
+        # (async_request_refresh hätte 10 s Abklingzeit beim schnellen Hin- und Herschalten)
+        self.coordinator.async_set_updated_data(data)
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         try:
-            await self.coordinator.client.set_display(power=False)
+            info = await self.coordinator.client.set_display(power=False)
         except LumaGlowError as err:
             raise HomeAssistantError(str(err)) from err
-        await self.coordinator.async_request_refresh()
+        self.coordinator.async_set_updated_data(replace(self.coordinator.data, info=info))
