@@ -25,7 +25,17 @@
       "rssi": { "name": "WLAN-Signal" },
       "fs_free": { "name": "Freier Speicher" },
       "current": { "name": "LED-Strom" },
-      "power": { "name": "LED-Leistung" }
+      "power": { "name": "LED-Leistung" },
+      "boot_time": { "name": "Letzter Neustart" }
+    },
+    "select": {
+      "gif": { "name": "GIF" }
+    },
+    "image": {
+      "gif_preview": { "name": "GIF-Vorschau" }
+    },
+    "number": {
+      "max_current": { "name": "Strombegrenzung" }
     }
   }
 }

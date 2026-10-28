@@ -1,9 +1,10 @@
-"""Sensoren: geschätzter LED-Strom und -Leistung, Diagnose (WLAN-Signal, freier Speicher)."""
+"""Sensoren: geschätzter LED-Strom und -Leistung, Diagnose (WLAN-Signal, freier Speicher, letzter Neustart)."""
 
 from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass
+from datetime import timedelta
 from typing import Any
 
 from homeassistant.components.sensor import (
@@ -19,8 +20,9 @@ from homeassistant.const import (
     UnitOfInformation,
     UnitOfPower,
 )
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
+from homeassistant.util import dt as dt_util
 
 from .coordinator import LumaGlowConfigEntry, LumaGlowCoordinator
 from .entity import LumaGlowEntity
@@ -88,7 +90,8 @@ async def async_setup_entry(
     entry: LumaGlowConfigEntry,
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
-    async_add_entities(LumaGlowSensor(entry.runtime_data, d) for d in SENSORS)
+    coordinator = entry.runtime_data
+    async_add_entities([*(LumaGlowSensor(coordinator, d) for d in SENSORS), LumaGlowBootTimeSensor(coordinator)])
 
 
 class LumaGlowSensor(LumaGlowEntity, SensorEntity):
@@ -101,3 +104,35 @@ class LumaGlowSensor(LumaGlowEntity, SensorEntity):
     @property
     def native_value(self) -> Any:
         return self.entity_description.value_fn(self.coordinator.data.info)
+
+
+# Abfragedauer und ganze Sekunden verschieben den errechneten Startzeitpunkt leicht;
+# erst eine größere Abweichung gilt als Neustart
+BOOT_TIME_TOLERANCE = timedelta(seconds=30)
+
+
+class LumaGlowBootTimeSensor(LumaGlowEntity, SensorEntity):
+    """Zeitpunkt des letzten Starts, errechnet aus `uptime` (Sekunden seit dem Start)."""
+
+    _attr_translation_key = "boot_time"
+    _attr_device_class = SensorDeviceClass.TIMESTAMP
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+
+    def __init__(self, coordinator: LumaGlowCoordinator) -> None:
+        super().__init__(coordinator, "boot_time")
+        self._update_boot_time()
+
+    def _update_boot_time(self) -> None:
+        uptime = self.coordinator.data.info.get("uptime")
+        if uptime is None:
+            self._attr_native_value = None
+            return
+        boot = (dt_util.utcnow() - timedelta(seconds=uptime)).replace(microsecond=0)
+        previous = self._attr_native_value
+        if previous is None or abs(boot - previous) > BOOT_TIME_TOLERANCE:
+            self._attr_native_value = boot
+
+    @callback
+    def _handle_coordinator_update(self) -> None:
+        self._update_boot_time()
+        super()._handle_coordinator_update()

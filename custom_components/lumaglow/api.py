@@ -49,6 +49,18 @@ class LumaGlowClient:
         data = {key: int(v) if isinstance(v, bool) else v for key, v in values.items()}
         return await self._request("POST", "/api/display", data)
 
+    async def get_thumb(self, name: str) -> bytes:
+        """Vorschaubild eines GIFs: 16x16 Pixel RGB (768 Bytes), zeilenweise von oben links."""
+        url = f"http://{self.host}/api/gifs/thumb"
+        try:
+            async with asyncio.timeout(REQUEST_TIMEOUT):
+                async with self._session.get(url, params={"name": name}) as resp:
+                    if resp.status >= 400:
+                        raise LumaGlowError(f"GET {url}?name={name}: HTTP {resp.status}")
+                    return await resp.read()
+        except (aiohttp.ClientError, TimeoutError) as err:
+            raise LumaGlowError(f"GET {url}?name={name}: {err}") from err
+
     async def play_gif(self, name: str) -> None:
         await self._request("POST", "/api/gifs/play", {"name": name})
 

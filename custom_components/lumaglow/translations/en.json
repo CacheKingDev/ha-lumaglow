@@ -25,7 +25,17 @@
       "rssi": { "name": "WiFi signal" },
       "fs_free": { "name": "Free storage" },
       "current": { "name": "LED current" },
-      "power": { "name": "LED power" }
+      "power": { "name": "LED power" },
+      "boot_time": { "name": "Last restart" }
+    },
+    "select": {
+      "gif": { "name": "GIF" }
+    },
+    "image": {
+      "gif_preview": { "name": "GIF preview" }
+    },
+    "number": {
+      "max_current": { "name": "Current limit" }
     }
   }
 }

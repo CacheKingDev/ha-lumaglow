@@ -17,11 +17,9 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
 from .api import LumaGlowError
+from .const import NO_GIF as EFFECT_NONE
 from .coordinator import LumaGlowConfigEntry
 from .entity import LumaGlowEntity
-
-# Effekt, der das laufende GIF anhält (Matrix bleibt an, aber schwarz)
-EFFECT_NONE = "Kein GIF"
 
 
 async def async_setup_entry(

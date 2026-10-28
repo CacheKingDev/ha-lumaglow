@@ -25,8 +25,12 @@ Voraussetzung: Firmware mit mDNS-Dienst `_lumaglow._tcp` (für die automatische 
 | Licht | An/aus, Helligkeit, Effekt = GIF auswählen („Kein GIF“ hält das GIF an) |
 | LED-Strom | geschätzter Strom der LEDs in mA, Mittel der letzten 10 s (Firmware ab v0.8.0; ältere: Wert des letzten Bildes) |
 | LED-Leistung | LED-Strom × 5 V in W. Für das Energie-Dashboard mit dem Helfer „Integral“ (Riemann-Summe) in kWh umrechnen |
+| GIF | Auswahl des laufenden GIFs, wie der Licht-Effekt („Kein GIF“ hält das GIF an) |
+| GIF-Vorschau | Bild des laufenden GIFs (ein Frame, 16×16 Pixel vergrößert) |
+| Strombegrenzung | Konfiguration, Obergrenze für den LED-Strom in mA (0 = keine Grenze, sonst 500–20000) |
 | WLAN-Signal | Diagnose, dBm |
 | Freier Speicher | Diagnose, freier Platz für GIFs |
+| Letzter Neustart | Diagnose, Zeitpunkt des letzten Starts (aus der Laufzeit des Geräts) |
 
 Der Zustand wird alle 10 s abgefragt. Die MAC-Adresse ist die eindeutige ID, mehrere Matrizen lassen sich also parallel einrichten. Ändert sich die IP, aktualisiert die Zeroconf-Erkennung den Eintrag. Antwortet unter dem Host ein anderes Gerät (andere MAC), wird die Matrix als nicht verfügbar angezeigt statt fremde Daten zu übernehmen.
 
