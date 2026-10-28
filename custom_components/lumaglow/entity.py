@@ -16,13 +16,16 @@ class LumaGlowEntity(CoordinatorEntity[LumaGlowCoordinator]):
         super().__init__(coordinator)
         mac = coordinator.config_entry.unique_id
         info = coordinator.data.info
+        hostname = info.get("hostname")
+        # mDNS-Name statt IP, damit der Link einen IP-Wechsel überlebt
+        url_host = f"{hostname}.local" if hostname else coordinator.client.host
         self._attr_unique_id = f"{mac}_{key}"
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, mac)},
             connections={(CONNECTION_NETWORK_MAC, mac)},
             manufacturer=MANUFACTURER,
             model=f"16x16 Matrix ({info.get('chip', '?')})",
-            name=info.get("hostname") or "LumaGlow",
+            name=hostname or "LumaGlow",
             sw_version=info.get("version") or info.get("build"),
-            configuration_url=f"http://{coordinator.client.host}",
+            configuration_url=f"http://{url_host}",
         )
