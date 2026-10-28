@@ -23,6 +23,8 @@ Voraussetzung: Firmware mit mDNS-Dienst `_lumaglow._tcp` (für die automatische 
 | Entität | Funktion |
 |---------|----------|
 | Licht | An/aus, Helligkeit, Effekt = GIF auswählen („Kein GIF“ hält das GIF an) |
+| LED-Strom | geschätzter Strom der LEDs in mA, Mittel der letzten 10 s (Firmware ab v0.8.0; ältere: Wert des letzten Bildes) |
+| LED-Leistung | LED-Strom × 5 V in W. Für das Energie-Dashboard mit dem Helfer „Integral“ (Riemann-Summe) in kWh umrechnen |
 | WLAN-Signal | Diagnose, dBm |
 | Freier Speicher | Diagnose, freier Platz für GIFs |
 

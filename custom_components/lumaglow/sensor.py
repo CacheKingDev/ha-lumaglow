@@ -1,4 +1,4 @@
-"""Diagnose-Sensoren: WLAN-Signal und freier Speicher."""
+"""Sensoren: geschätzter LED-Strom und -Leistung, Diagnose (WLAN-Signal, freier Speicher)."""
 
 from __future__ import annotations
 
@@ -12,7 +12,13 @@ from homeassistant.components.sensor import (
     SensorEntityDescription,
     SensorStateClass,
 )
-from homeassistant.const import SIGNAL_STRENGTH_DECIBELS_MILLIWATT, EntityCategory, UnitOfInformation
+from homeassistant.const import (
+    SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
+    EntityCategory,
+    UnitOfElectricCurrent,
+    UnitOfInformation,
+    UnitOfPower,
+)
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
@@ -25,7 +31,37 @@ class LumaGlowSensorDescription(SensorEntityDescription):
     value_fn: Callable[[dict[str, Any]], Any]
 
 
+LED_VOLTAGE = 5.0  # V, Versorgung der WS2812
+
+
+def _current_ma(info: dict[str, Any]) -> int | None:
+    # Mittel der letzten 10 s (Firmware ab v0.8.0), sonst Wert des letzten Bildes
+    return info.get("currentAvg", info.get("current"))
+
+
+def _power_w(info: dict[str, Any]) -> float | None:
+    current = _current_ma(info)
+    return None if current is None else round(current * LED_VOLTAGE / 1000, 2)
+
+
 SENSORS = (
+    LumaGlowSensorDescription(
+        key="current",
+        translation_key="current",
+        device_class=SensorDeviceClass.CURRENT,
+        native_unit_of_measurement=UnitOfElectricCurrent.MILLIAMPERE,
+        state_class=SensorStateClass.MEASUREMENT,
+        value_fn=_current_ma,
+    ),
+    LumaGlowSensorDescription(
+        key="power",
+        translation_key="power",
+        device_class=SensorDeviceClass.POWER,
+        native_unit_of_measurement=UnitOfPower.WATT,
+        state_class=SensorStateClass.MEASUREMENT,
+        suggested_display_precision=1,
+        value_fn=_power_w,
+    ),
     LumaGlowSensorDescription(
         key="rssi",
         translation_key="rssi",

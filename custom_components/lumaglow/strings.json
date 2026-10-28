@@ -23,7 +23,9 @@
   "entity": {
     "sensor": {
       "rssi": { "name": "WiFi signal" },
-      "fs_free": { "name": "Free storage" }
+      "fs_free": { "name": "Free storage" },
+      "current": { "name": "LED current" },
+      "power": { "name": "LED power" }
     }
   }
 }
