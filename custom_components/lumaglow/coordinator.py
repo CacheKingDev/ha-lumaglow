@@ -25,7 +25,7 @@ class LumaGlowData:
     gifs: list[str]
     current_gif: str | None   # nur gesetzt, wenn das GIF gerade läuft
     playlist: dict[str, Any] | None = None   # None = Firmware ohne Playlist (vor v0.10.0)
-    light: dict[str, Any] | None = None      # nur am LED-Strip: effect, effectName, color, color2, speed, intensity
+    light: dict[str, Any] | None = None      # nur am LED-Strip: effect, effectName, color, color2, speed, intensity, palette
 
     @property
     def strip(self) -> bool:
@@ -44,9 +44,12 @@ class LumaGlowCoordinator(DataUpdateCoordinator[LumaGlowData]):
     def __init__(self, hass: HomeAssistant, entry: LumaGlowConfigEntry, client: LumaGlowClient) -> None:
         super().__init__(hass, _LOGGER, config_entry=entry, name=DOMAIN, update_interval=SCAN_INTERVAL)
         self.client = client
-        # Effekte des Strips (id, name, color, color2, speed, intensity); ändern sich nur mit der Firmware
+        # Effekte (id, name, color, color2, speed, intensity) und Paletten (id, name, colors) des Strips;
+        # ändern sich nur mit der Firmware, daher nur einmal laden (nach einem Update lädt der Eintrag neu)
         self.effects: list[dict[str, Any]] = []
+        self.palettes: list[dict[str, Any]] = []
         self._strip: bool | None = None
+        self._version: str | None = None
 
     async def _async_update_data(self) -> LumaGlowData:
         try:
@@ -69,13 +72,22 @@ class LumaGlowCoordinator(DataUpdateCoordinator[LumaGlowData]):
             self.hass.config_entries.async_schedule_reload(self.config_entry.entry_id)
         self._strip = strip
 
+        # Neue Firmware: neue Effekte, Paletten oder Entitäten (z. B. Palette, LEDs) → Eintrag neu laden
+        version = info.get("version") or info.get("build")
+        if self._version is not None and version != self._version:
+            _LOGGER.info("%s hat jetzt Firmware %s, lade neu", self.client.host, version)
+            self.hass.config_entries.async_schedule_reload(self.config_entry.entry_id)
+        self._version = version
+
         if strip:
-            # Keine GIFs; den Zustand liefert /api/info, die Effektliste einmal /api/light
+            # Keine GIFs; den Zustand liefert /api/info, Effekte und Paletten /api/light
             if not self.effects:
                 try:
-                    self.effects = (await self.client.get_light()).get("effects", [])
+                    light = await self.client.get_light()
                 except LumaGlowError as err:
                     raise UpdateFailed(str(err)) from err
+                self.effects = light.get("effects", [])
+                self.palettes = light.get("palettes", [])   # Firmware ab v0.12.0
             return LumaGlowData(info=info, gifs=[], current_gif=None, light=info.get("light"))
 
         try:

@@ -35,6 +35,7 @@ Voraussetzung: Firmware mit mDNS-Dienst `_lumaglow._tcp` (für die automatische 
 | WLAN-Signal | Diagnose, dBm |
 | Freier Speicher | Diagnose, freier Platz für GIFs |
 | Letzter Neustart | Diagnose, Zeitpunkt des letzten Starts (aus der Laufzeit des Geräts) |
+| LEDs | Diagnose, Datenpin, RGB/RGBW und Farbreihenfolge aus dem Einrichtungsassistenten, z. B. „GPIO4, RGB, GRB“. Ab Firmware v0.14.0 |
 
 ### LED-Strip
 
@@ -45,8 +46,11 @@ Ist das Gerät als LED-Strip eingerichtet (Firmware ab v0.11.0), gibt es keine G
 | Licht | An/aus, Helligkeit, Farbe (RGB), Weißton (1900–6500 K) und Effekt (Farbe, Atmen, Regenbogen, Feuer, Kerze, …). Eine Farbe bei einem Effekt ohne eigene Farbe (z. B. Regenbogen) schaltet auf „Farbe“ um |
 | Effekt-Geschwindigkeit | 0–100 % |
 | Effekt-Stärke | 0–100 %, je nach Effekt Dichte, Schweif, Funken, Flackern … |
+| Palette | Farbverlauf, der sich auf den Effekt legt: Standard (Farben des Effekts), Farbe 1+2, Regenbogen, Party, Ozean, Wald, Lava, Wolken, Sonnenuntergang, Feuer, Polarlicht, Pastell, Eis, Herbst, Neon. Ab Firmware v0.12.0. Eine Farbe am Licht wählen stellt eine Palette mit eigenen Farben auf „Standard“ zurück, wie im Webinterface |
 
-Strom, Leistung, Strombegrenzung und Diagnose gibt es wie bei der Matrix. Wird das Gerät nach einem Werksreset von Matrix auf Strip umgestellt (oder umgekehrt), lädt die Integration den Eintrag selbst neu.
+Die Effektliste kommt vom Gerät, neue Effekte einer neueren Firmware erscheinen also von selbst. Die zweite Farbe mancher Effekte (Wellen, Theater, Farbwischen, Auflösen) stellt nur das Webinterface ein.
+
+Strom, Leistung, Strombegrenzung und Diagnose gibt es wie bei der Matrix. Wird das Gerät nach einem Werksreset von Matrix auf Strip umgestellt (oder umgekehrt), lädt die Integration den Eintrag selbst neu. Das gilt auch nach einem Firmware-Update, damit neue Effekte, Paletten und Entitäten erscheinen.
 
 Der Zustand wird alle 10 s abgefragt. Die MAC-Adresse ist die eindeutige ID, mehrere Matrizen lassen sich also parallel einrichten. Ändert sich die IP, aktualisiert die Zeroconf-Erkennung den Eintrag. Antwortet unter dem Host ein anderes Gerät (andere MAC), wird die Matrix als nicht verfügbar angezeigt statt fremde Daten zu übernehmen.
 
@@ -73,6 +77,42 @@ data:
   color_temp_kelvin: 2200
   brightness: 20
   effect: Farbe
+```
+
+Strip mit Feuer-Effekt in der Palette „Lava“ (Skript):
+
+```yaml
+sequence:
+  - action: light.turn_on
+    target:
+      entity_id: light.lumaglow
+    data:
+      effect: Feuer
+  - action: select.select_option
+    target:
+      entity_id: select.lumaglow_palette
+    data:
+      option: Lava
+```
+
+Wecklicht: um 6:30 der Sonnenaufgang. Die Dauer stellt die Effekt-Geschwindigkeit ein (0 % = 60 min, 50 % ≈ 30 min, 100 % = 1 min):
+
+```yaml
+triggers:
+  - trigger: time
+    at: "06:30:00"
+actions:
+  - action: light.turn_on
+    target:
+      entity_id: light.lumaglow
+    data:
+      effect: Sonnenaufgang
+      brightness: 255
+  - action: number.set_value
+    target:
+      entity_id: number.lumaglow_effekt_geschwindigkeit
+    data:
+      value: 50
 ```
 
 Abends die Playlist starten:

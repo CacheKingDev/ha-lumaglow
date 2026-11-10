@@ -1,4 +1,4 @@
-"""Sensoren: geschätzter LED-Strom und -Leistung, Diagnose (WLAN-Signal, freier Speicher, letzter Neustart)."""
+"""Sensoren: geschätzter LED-Strom und -Leistung, Diagnose (WLAN-Signal, freier Speicher, letzter Neustart, LEDs)."""
 
 from __future__ import annotations
 
@@ -46,6 +46,20 @@ def _power_w(info: dict[str, Any]) -> float | None:
     return None if current is None else round(current * LED_VOLTAGE / 1000, 2)
 
 
+def _led_type(info: dict[str, Any]) -> str | None:
+    # Firmware ab v0.14.0: Datenpin, RGB/RGBW und Farbreihenfolge aus dem Einrichtungsassistenten
+    if "ledPin" not in info:
+        return None
+    return f"GPIO{info['ledPin']}, {'RGBW' if info.get('ledRgbw') else 'RGB'}, {info.get('ledOrder', '?')}"
+
+
+LED_TYPE_SENSOR = LumaGlowSensorDescription(
+    key="led_type",
+    translation_key="led_type",
+    entity_category=EntityCategory.DIAGNOSTIC,
+    value_fn=_led_type,
+)
+
 SENSORS = (
     LumaGlowSensorDescription(
         key="current",
@@ -91,7 +105,10 @@ async def async_setup_entry(
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     coordinator = entry.runtime_data
-    async_add_entities([*(LumaGlowSensor(coordinator, d) for d in SENSORS), LumaGlowBootTimeSensor(coordinator)])
+    descriptions = list(SENSORS)
+    if "ledPin" in coordinator.data.info:
+        descriptions.append(LED_TYPE_SENSOR)
+    async_add_entities([*(LumaGlowSensor(coordinator, d) for d in descriptions), LumaGlowBootTimeSensor(coordinator)])
 
 
 class LumaGlowSensor(LumaGlowEntity, SensorEntity):

@@ -26,7 +26,8 @@
       "fs_free": { "name": "Freier Speicher" },
       "current": { "name": "LED-Strom" },
       "power": { "name": "LED-Leistung" },
-      "boot_time": { "name": "Letzter Neustart" }
+      "boot_time": { "name": "Letzter Neustart" },
+      "led_type": { "name": "LEDs" }
     },
     "switch": {
       "playlist": { "name": "Playlist" },
@@ -36,7 +37,8 @@
       "playlist_next": { "name": "Nächstes GIF" }
     },
     "select": {
-      "gif": { "name": "GIF" }
+      "gif": { "name": "GIF" },
+      "palette": { "name": "Palette" }
     },
     "image": {
       "gif_preview": { "name": "GIF-Vorschau" }

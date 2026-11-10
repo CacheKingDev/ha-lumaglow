@@ -1,6 +1,9 @@
-"""GIF-Auswahl als eigene Entität (gleiche Funktion wie der Licht-Effekt, aber ohne Licht-Dialog)."""
+"""GIF-Auswahl als eigene Entität (gleiche Funktion wie der Licht-Effekt, aber ohne Licht-Dialog);
+am LED-Strip die Palette."""
 
 from __future__ import annotations
+
+from dataclasses import replace
 
 from homeassistant.components.select import SelectEntity
 from homeassistant.core import HomeAssistant
@@ -18,9 +21,13 @@ async def async_setup_entry(
     entry: LumaGlowConfigEntry,
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
-    if entry.runtime_data.data.strip:
-        return   # LED-Strip: keine GIFs, Effekte über das Licht
-    async_add_entities([LumaGlowGIFSelect(entry.runtime_data)])
+    coordinator = entry.runtime_data
+    if coordinator.data.strip:
+        # LED-Strip: keine GIFs, Effekte über das Licht; Paletten ab Firmware v0.12.0
+        if coordinator.palettes:
+            async_add_entities([LumaGlowPaletteSelect(coordinator)])
+        return
+    async_add_entities([LumaGlowGIFSelect(coordinator)])
 
 
 class LumaGlowGIFSelect(LumaGlowEntity, SelectEntity):
@@ -50,3 +57,35 @@ class LumaGlowGIFSelect(LumaGlowEntity, SelectEntity):
             raise HomeAssistantError(str(err)) from err
         current = None if option == NO_GIF else option
         self.coordinator.async_set_updated_data(self.coordinator.data.single_gif(current))
+
+
+class LumaGlowPaletteSelect(LumaGlowEntity, SelectEntity):
+    """Farbverlauf, der sich auf den Effekt legt (LED-Strip, Firmware ab v0.12.0)."""
+
+    _attr_translation_key = "palette"
+
+    def __init__(self, coordinator: LumaGlowCoordinator) -> None:
+        super().__init__(coordinator, "palette")
+
+    @property
+    def options(self) -> list[str]:
+        return [p["name"] for p in self.coordinator.palettes]
+
+    @property
+    def current_option(self) -> str | None:
+        light = self.coordinator.data.light or {}
+        name = light.get("paletteName")
+        return name if name in self.options else None
+
+    async def async_select_option(self, option: str) -> None:
+        match = next((p for p in self.coordinator.palettes if p["name"] == option), None)
+        if match is None:
+            raise HomeAssistantError(f"Unbekannte Palette: {option}")
+        client = self.coordinator.client
+        try:
+            light = await client.set_light(palette=match["id"])
+            # Eine Änderung am Licht schaltet es ein: Ein/Aus und Helligkeit neu lesen
+            info = await client.get_info()
+        except LumaGlowError as err:
+            raise HomeAssistantError(str(err)) from err
+        self.coordinator.async_set_updated_data(replace(self.coordinator.data, info=info, light=light))

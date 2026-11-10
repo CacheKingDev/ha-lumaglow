@@ -98,6 +98,8 @@ class LumaGlowLight(LumaGlowEntity, LightEntity):
 STRIP_MIN_KELVIN = 1900
 STRIP_MAX_KELVIN = 6500
 EFFECT_SOLID = 0   # "Farbe" (Effects.h)
+PALETTE_DEFAULT = 0   # "Standard": Farben des Effekts
+PALETTE_COLORS = 1    # "Farbe 1+2": Verlauf aus den gewählten Farben; ab 2 eigene Farben der Palette
 
 
 def _hex(rgb: tuple[float, float, float]) -> str:
@@ -178,10 +180,15 @@ class LumaGlowStripLight(LumaGlowEntity, LightEntity):
             params["color"] = _hex(color_temperature_to_rgb(kelvin))
             self._kelvin, self._kelvin_color = kelvin, params["color"]
 
-        # Farbe bei einem Effekt ohne eigene Farbe (Regenbogen, Feuer …): auf "Farbe" umschalten, wie im Webinterface
-        if "color" in params and "effect" not in params:
-            if not self._effect_by_id(self._light.get("effect")).get("color", True):
-                params["effect"] = EFFECT_SOLID
+        # Wie im Webinterface: Eine Palette mit eigenen Farben würde die Farbe überdecken → Palette "Standard".
+        # Sonst bei einem Effekt ohne eigene Farbe (Regenbogen, Feuer …) auf "Farbe" umschalten.
+        if "color" in params:
+            palette = self._light.get("palette", PALETTE_DEFAULT)
+            if palette > PALETTE_COLORS:
+                params["palette"] = PALETTE_DEFAULT
+            elif "effect" not in params and palette != PALETTE_COLORS:
+                if not self._effect_by_id(self._light.get("effect")).get("color", True):
+                    params["effect"] = EFFECT_SOLID
 
         try:
             display: dict[str, Any] = {"power": True}

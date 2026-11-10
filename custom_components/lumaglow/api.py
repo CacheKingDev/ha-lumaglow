@@ -68,11 +68,12 @@ class LumaGlowClient:
         await self._request("POST", "/api/gifs/stop")
 
     async def get_light(self) -> dict[str, Any]:
-        """Licht am LED-Strip (Firmware ab v0.11.0): effect, effectName, color, color2, speed, intensity, effects."""
+        """Licht am LED-Strip (Firmware ab v0.11.0): effect, effectName, color, color2, speed, intensity, effects;
+        ab v0.12.0 auch palette, paletteName und palettes."""
         return await self._request("GET", "/api/light")
 
     async def set_light(self, **values: Any) -> dict[str, Any]:
-        """Licht ändern: effect (Nummer), color/color2 (#rrggbb), speed, intensity (0–255). Schaltet ein."""
+        """Licht ändern: effect (Nummer), color/color2 (#rrggbb), speed, intensity (0–255), palette (Nummer). Schaltet ein."""
         return await self._request("POST", "/api/light", values)
 
     async def get_playlist(self) -> dict[str, Any]:
