@@ -28,6 +28,13 @@
       "power": { "name": "LED power" },
       "boot_time": { "name": "Last restart" }
     },
+    "switch": {
+      "playlist": { "name": "Playlist" },
+      "playlist_shuffle": { "name": "Playlist shuffle" }
+    },
+    "button": {
+      "playlist_next": { "name": "Next GIF" }
+    },
     "select": {
       "gif": { "name": "GIF" }
     },
@@ -35,7 +42,8 @@
       "gif_preview": { "name": "GIF preview" }
     },
     "number": {
-      "max_current": { "name": "Current limit" }
+      "max_current": { "name": "Current limit" },
+      "playlist_seconds": { "name": "Playlist duration per GIF" }
     }
   }
 }

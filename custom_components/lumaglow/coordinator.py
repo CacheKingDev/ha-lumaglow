@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 import logging
 from typing import Any
 
@@ -24,6 +24,12 @@ class LumaGlowData:
     info: dict[str, Any]
     gifs: list[str]
     current_gif: str | None   # nur gesetzt, wenn das GIF gerade läuft
+    playlist: dict[str, Any] | None = None   # None = Firmware ohne Playlist (vor v0.10.0)
+
+    def single_gif(self, current: str | None) -> LumaGlowData:
+        """Zustand nach Auswahl eines einzelnen GIFs bzw. "Kein GIF": die Firmware beendet dabei die Playlist."""
+        playlist = {**self.playlist, "active": False} if self.playlist else self.playlist
+        return replace(self, current_gif=current, playlist=playlist)
 
 
 class LumaGlowCoordinator(DataUpdateCoordinator[LumaGlowData]):
@@ -48,9 +54,18 @@ class LumaGlowCoordinator(DataUpdateCoordinator[LumaGlowData]):
                 f"{self.client.host} gehört zu {mac or 'unbekannt'}, erwartet {self.config_entry.unique_id}"
             )
 
+        # Playlist nur abfragen, wenn die Firmware sie kennt (/api/info hat dann "playlist")
+        playlist = None
+        if "playlist" in info:
+            try:
+                playlist = await self.client.get_playlist()
+            except LumaGlowError as err:
+                raise UpdateFailed(str(err)) from err
+
         current = gifs.get("current") or None
         return LumaGlowData(
             info=info,
             gifs=[g["name"] for g in gifs.get("gifs", [])],
             current_gif=current if gifs.get("playing") else None,
+            playlist=playlist,
         )

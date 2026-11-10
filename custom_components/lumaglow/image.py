@@ -17,24 +17,28 @@ from .entity import LumaGlowEntity
 
 _LOGGER = logging.getLogger(__name__)
 
-MATRIX_SIZE = 16   # Pixel pro Seite
-SCALE = 16         # 16x16 → 256x256, sonst zeigt der Browser es verschwommen an
+TARGET_SIDE = 256   # längere Seite des PNGs in Pixeln; ohne Vergrößerung zeigt der Browser es verschwommen an
 
 
-def _rgb_to_png(rgb: bytes) -> bytes:
-    """RGB-Pixel (zeilenweise von oben links) als PNG, jedes Pixel SCALE x SCALE groß."""
-    row_bytes = MATRIX_SIZE * 3
+def _matrix_size(info: dict) -> tuple[int, int]:
+    """Matrixgröße aus /api/info (Firmware ab v0.10.0), ältere Firmware: 16x16."""
+    return int(info.get("width", 16)), int(info.get("height", 16))
+
+
+def _rgb_to_png(rgb: bytes, width: int, height: int) -> bytes:
+    """RGB-Pixel (zeilenweise von oben links) als PNG, jedes Pixel scale x scale groß."""
+    scale = max(1, TARGET_SIDE // max(width, height))
+    row_bytes = width * 3
     rows = []
-    for y in range(MATRIX_SIZE):
+    for y in range(height):
         row = rgb[y * row_bytes:(y + 1) * row_bytes]
-        scaled = b"".join(row[x * 3:x * 3 + 3] * SCALE for x in range(MATRIX_SIZE))
-        rows.append((b"\x00" + scaled) * SCALE)   # Filter 0 = keiner
+        scaled = b"".join(row[x * 3:x * 3 + 3] * scale for x in range(width))
+        rows.append((b"\x00" + scaled) * scale)   # Filter 0 = keiner
 
     def chunk(tag: bytes, data: bytes) -> bytes:
         return struct.pack(">I", len(data)) + tag + data + struct.pack(">I", zlib.crc32(tag + data))
 
-    side = MATRIX_SIZE * SCALE
-    header = struct.pack(">IIBBBBB", side, side, 8, 2, 0, 0, 0)   # 8 Bit, RGB
+    header = struct.pack(">IIBBBBB", width * scale, height * scale, 8, 2, 0, 0, 0)   # 8 Bit, RGB
     return (
         b"\x89PNG\r\n\x1a\n"
         + chunk(b"IHDR", header)
@@ -82,10 +86,11 @@ class LumaGlowGIFImage(LumaGlowEntity, ImageEntity):
             except LumaGlowError as err:
                 _LOGGER.debug("Vorschau für %s nicht geladen: %s", gif, err)
                 return None
-            if len(rgb) != MATRIX_SIZE * MATRIX_SIZE * 3:
-                _LOGGER.debug("Vorschau für %s hat %d Bytes statt %d", gif, len(rgb), MATRIX_SIZE * MATRIX_SIZE * 3)
+            width, height = _matrix_size(self.coordinator.data.info)
+            if len(rgb) != width * height * 3:
+                _LOGGER.debug("Vorschau für %s hat %d Bytes statt %d", gif, len(rgb), width * height * 3)
                 return None
-            png = _rgb_to_png(rgb)
+            png = _rgb_to_png(rgb, width, height)
             # Während des Ladens kann ein anderes GIF gestartet sein
             if gif != self._gif:
                 return png

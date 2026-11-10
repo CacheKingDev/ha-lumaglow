@@ -50,7 +50,7 @@ class LumaGlowClient:
         return await self._request("POST", "/api/display", data)
 
     async def get_thumb(self, name: str) -> bytes:
-        """Vorschaubild eines GIFs: 16x16 Pixel RGB (768 Bytes), zeilenweise von oben links."""
+        """Vorschaubild eines GIFs: Breite x Höhe x 3 Bytes RGB (Matrixgröße aus /api/info), zeilenweise von oben links."""
         url = f"http://{self.host}/api/gifs/thumb"
         try:
             async with asyncio.timeout(REQUEST_TIMEOUT):
@@ -66,3 +66,12 @@ class LumaGlowClient:
 
     async def stop_gif(self) -> None:
         await self._request("POST", "/api/gifs/stop")
+
+    async def get_playlist(self) -> dict[str, Any]:
+        """Playlist (Firmware ab v0.10.0): items, seconds, shuffle, active, current."""
+        return await self._request("GET", "/api/playlist")
+
+    async def set_playlist(self, **values: Any) -> dict[str, Any]:
+        """Playlist ändern: active (0/1), seconds, shuffle (0/1), next=1. Antwort = neuer Zustand."""
+        data = {key: int(v) if isinstance(v, bool) else v for key, v in values.items()}
+        return await self._request("POST", "/api/playlist", data)

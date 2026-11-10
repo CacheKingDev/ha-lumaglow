@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from dataclasses import replace
-
 from homeassistant.components.select import SelectEntity
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
@@ -49,4 +47,4 @@ class LumaGlowGIFSelect(LumaGlowEntity, SelectEntity):
         except LumaGlowError as err:
             raise HomeAssistantError(str(err)) from err
         current = None if option == NO_GIF else option
-        self.coordinator.async_set_updated_data(replace(self.coordinator.data, current_gif=current))
+        self.coordinator.async_set_updated_data(self.coordinator.data.single_gif(current))

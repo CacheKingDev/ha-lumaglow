@@ -69,10 +69,10 @@ class LumaGlowLight(LumaGlowEntity, LightEntity):
             effect = kwargs.get(ATTR_EFFECT)
             if effect == EFFECT_NONE:
                 await client.stop_gif()
-                data = replace(data, current_gif=None)
+                data = data.single_gif(None)
             elif effect is not None:
                 await client.play_gif(effect)
-                data = replace(data, current_gif=effect)
+                data = data.single_gif(effect)
         except LumaGlowError as err:
             raise HomeAssistantError(str(err)) from err
         # Zustand sofort übernehmen statt auf die nächste Abfrage zu warten

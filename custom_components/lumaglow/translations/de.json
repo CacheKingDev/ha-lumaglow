@@ -28,6 +28,13 @@
       "power": { "name": "LED-Leistung" },
       "boot_time": { "name": "Letzter Neustart" }
     },
+    "switch": {
+      "playlist": { "name": "Playlist" },
+      "playlist_shuffle": { "name": "Playlist zufällig" }
+    },
+    "button": {
+      "playlist_next": { "name": "Nächstes GIF" }
+    },
     "select": {
       "gif": { "name": "GIF" }
     },
@@ -35,7 +42,8 @@
       "gif_preview": { "name": "GIF-Vorschau" }
     },
     "number": {
-      "max_current": { "name": "Strombegrenzung" }
+      "max_current": { "name": "Strombegrenzung" },
+      "playlist_seconds": { "name": "Playlist-Dauer pro GIF" }
     }
   }
 }

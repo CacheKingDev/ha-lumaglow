@@ -1,4 +1,4 @@
-"""LumaGlow – 16x16-Pixelmatrix im lokalen Netz (REST-API der Firmware)."""
+"""LumaGlow – Pixelmatrix (WS2812, z. B. 8x8 oder 16x16) im lokalen Netz (REST-API der Firmware)."""
 
 from __future__ import annotations
 
@@ -9,7 +9,15 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from .api import LumaGlowClient
 from .coordinator import LumaGlowConfigEntry, LumaGlowCoordinator
 
-PLATFORMS = [Platform.IMAGE, Platform.LIGHT, Platform.NUMBER, Platform.SELECT, Platform.SENSOR]
+PLATFORMS = [
+    Platform.BUTTON,
+    Platform.IMAGE,
+    Platform.LIGHT,
+    Platform.NUMBER,
+    Platform.SELECT,
+    Platform.SENSOR,
+    Platform.SWITCH,
+]
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: LumaGlowConfigEntry) -> bool:
