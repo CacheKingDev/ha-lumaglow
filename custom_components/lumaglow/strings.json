@@ -43,7 +43,9 @@
     },
     "number": {
       "max_current": { "name": "Current limit" },
-      "playlist_seconds": { "name": "Playlist duration per GIF" }
+      "playlist_seconds": { "name": "Playlist duration per GIF" },
+      "effect_speed": { "name": "Effect speed" },
+      "effect_intensity": { "name": "Effect intensity" }
     }
   }
 }

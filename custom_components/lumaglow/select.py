@@ -18,6 +18,8 @@ async def async_setup_entry(
     entry: LumaGlowConfigEntry,
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
+    if entry.runtime_data.data.strip:
+        return   # LED-Strip: keine GIFs, Effekte über das Licht
     async_add_entities([LumaGlowGIFSelect(entry.runtime_data)])
 
 

@@ -1,4 +1,4 @@
-"""Gemeinsame Basis: ein Gerät pro Matrix, Zustand vom Coordinator."""
+"""Gemeinsame Basis: ein Gerät pro Matrix bzw. LED-Strip, Zustand vom Coordinator."""
 
 from __future__ import annotations
 
@@ -24,7 +24,11 @@ class LumaGlowEntity(CoordinatorEntity[LumaGlowCoordinator]):
             identifiers={(DOMAIN, mac)},
             connections={(CONNECTION_NETWORK_MAC, mac)},
             manufacturer=MANUFACTURER,
-            model=f"{info.get('width', 16)}x{info.get('height', 16)} Matrix ({info.get('chip', '?')})",
+            model=(
+                f"LED-Strip, {info.get('leds', '?')} LEDs ({info.get('chip', '?')})"
+                if info.get("strip")
+                else f"{info.get('width', 16)}x{info.get('height', 16)} Matrix ({info.get('chip', '?')})"
+            ),
             name=hostname or "LumaGlow",
             sw_version=info.get("version") or info.get("build"),
             configuration_url=f"http://{url_host}",
